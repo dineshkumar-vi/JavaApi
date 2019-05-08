@@ -7,6 +7,6 @@ import com.example.data.User;
 @Service
 public interface UserService {
 	
-	boolean checkUser(User user);
+	User checkUser(User user);
 
 }

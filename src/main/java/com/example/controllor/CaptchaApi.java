@@ -37,7 +37,10 @@ public class CaptchaApi {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		Captcha response = captchaService.get(ipAddress);
-		return new ResponseEntity<Captcha>(response, HttpStatus.OK);
+		if(response != null) {
+			return new ResponseEntity<Captcha>(response, HttpStatus.OK);
+		}
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 }

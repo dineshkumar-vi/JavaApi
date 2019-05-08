@@ -14,12 +14,12 @@ public class UserServiceImpl implements UserService{
 	private UserRepo userRepo;
 
 	@Override
-	public boolean checkUser(User user) {
+	public User checkUser(User user) {
 		User userFromDb = userRepo.findByUserNameAndPassword(user.getUserName(), user.getPassword());
 		if(userFromDb.getUserName() != null) {
-			return true;
+			return userFromDb;
 		}
-		return false;
+		return null;
 	}
 
 }

@@ -19,12 +19,12 @@ public class LoginApi {
 	UserService userService;
 	
 	@PostMapping(consumes = "application/json", produces = "application/json")
-	public ResponseEntity<Boolean> create(@RequestBody User user) {
+	public ResponseEntity<User> create(@RequestBody User user) {
 		if(user == null || user.getUserName() == null || user.getPassword() == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
-		boolean isUserAvilable = userService.checkUser(user);
-		return new ResponseEntity<Boolean>(isUserAvilable, HttpStatus.OK);
+		User dbuser = userService.checkUser(user);
+		return new ResponseEntity<User>(dbuser, HttpStatus.OK);
 	}
 
 }
