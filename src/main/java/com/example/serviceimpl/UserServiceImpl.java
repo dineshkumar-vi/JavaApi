@@ -1,12 +1,13 @@
 package com.example.serviceimpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.example.data.User;
-import com.example.repository.CaptchaRepo;
 import com.example.repository.UserRepo;
 import com.example.service.UserService;
 
+@Component
 public class UserServiceImpl implements UserService{
 	
 	@Autowired
