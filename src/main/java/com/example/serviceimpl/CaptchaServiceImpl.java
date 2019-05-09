@@ -16,7 +16,7 @@ public class CaptchaServiceImpl implements CaptchaService{
 	@Autowired
 	private CaptchaRepo captchaRepo;
 	
-	private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
+	private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final SecureRandom RANDOM = new SecureRandom();
 
 	@Override
@@ -43,8 +43,10 @@ public class CaptchaServiceImpl implements CaptchaService{
 	}
 
 	@Override
-	public Captcha get(String ipAddress) {
-		List<Captcha> captchaList =  captchaRepo.findByIpAddress(ipAddress);
+	public Captcha get(String enteredCaptcha, String ipAddress) {
+		List<Captcha> captchaList =  captchaRepo.findByCaptchaAndIpAddress(enteredCaptcha, ipAddress);
+		System.out.println(enteredCaptcha +"__"+ ipAddress);
+		System.out.println(captchaList.size() +"__"+ ipAddress);
 		if(captchaList != null && captchaList.size() > 0) {
 			Captcha captcha =  captchaList.get(captchaList.size()-1);
 			return captcha;

@@ -2,6 +2,7 @@ package com.example.data;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "captcha")
 public class Captcha {
@@ -9,8 +10,10 @@ public class Captcha {
 	@Id
 	private String id;
 	
+	@Field("captcha")
 	private String captcha;
 	
+	@Field("ipAddress")
 	private String ipAddress;
 
 	public String getId() {

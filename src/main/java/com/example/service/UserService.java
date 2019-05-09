@@ -9,4 +9,6 @@ public interface UserService {
 	
 	User checkUser(User user);
 
+	boolean validateCaptcha(String captcha, String ipAddress);
+
 }

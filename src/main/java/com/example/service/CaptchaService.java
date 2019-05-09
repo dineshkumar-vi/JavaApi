@@ -9,6 +9,6 @@ public interface CaptchaService {
 	
 	Captcha createCaptcha(Captcha captcha);
 	
-	Captcha get(String ipAddress);
+	Captcha get(String captcha, String ipAddress);
 
 }
