@@ -1,0 +1,432 @@
+{
+  "project": {
+    "name": "JavaApi",
+    "type": "Spring Boot REST API",
+    "version": "0.0.1-SNAPSHOT",
+    "javaVersion": "1.8",
+    "springBootVersion": "2.1.4.RELEASE"
+  },
+  "features": [
+    {
+      "id": "F001",
+      "name": "User Authentication",
+      "category": "Security",
+      "status": "Active",
+      "endpoint": "/login",
+      "method": "POST",
+      "description": "Validates user credentials against MongoDB database",
+      "controller": "com.example.controllor.LoginApi",
+      "service": "com.example.service.UserService",
+      "implementation": "com.example.serviceimpl.UserServiceImpl",
+      "dependencies": [
+        "CaptchaValidation",
+        "MongoDBUserRepository"
+      ],
+      "inputFields": [
+        "userName",
+        "password",
+        "captcha",
+        "ipAddress"
+      ],
+      "responses": {
+        "200": "User Validated successfully",
+        "400": "Invalid username and password / Invalid Captcha"
+      },
+      "securityLevel": "Low",
+      "securityConcerns": [
+        "Plaintext password storage",
+        "No JWT token generation",
+        "No rate limiting"
+      ]
+    },
+    {
+      "id": "F002",
+      "name": "CAPTCHA Generation",
+      "category": "Security",
+      "status": "Active",
+      "endpoint": "/captcha",
+      "method": "POST",
+      "description": "Generates cryptographically secure random CAPTCHA string",
+      "controller": "com.example.controllor.CaptchaApi",
+      "service": "com.example.service.CaptchaService",
+      "implementation": "com.example.serviceimpl.CaptchaServiceImpl",
+      "algorithm": "SecureRandom with alphanumeric charset (62 characters)",
+      "captchaLength": 6,
+      "characterSet": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+      "persistence": "MongoDB captcha collection",
+      "inputFields": [
+        "ipAddress"
+      ],
+      "outputFields": [
+        "id",
+        "captcha",
+        "ipAddress"
+      ],
+      "responses": {
+        "200": "Captcha object with generated value",
+        "400": "Invalid request"
+      },
+      "features": [
+        "Cryptographic randomness",
+        "IP address tracking",
+        "Persistent storage"
+      ]
+    },
+    {
+      "id": "F003",
+      "name": "CAPTCHA Validation",
+      "category": "Security",
+      "status": "Active",
+      "endpoint": "/captcha",
+      "method": "GET",
+      "description": "Validates CAPTCHA text against stored value for specific IP",
+      "controller": "com.example.controllor.CaptchaApi",
+      "service": "com.example.service.CaptchaService",
+      "implementation": "com.example.serviceimpl.CaptchaServiceImpl",
+      "queryParameters": [
+        "captcha",
+        "ipAddress"
+      ],
+      "validationLogic": "Retrieves most recent matching CAPTCHA for IP address",
+      "responses": {
+        "200": "Captcha object if valid",
+        "400": "Invalid captcha or IP"
+      },
+      "features": [
+        "IP-based validation",
+        "Multi-attempt tracking",
+        "Latest CAPTCHA selection"
+      ],
+      "limitations": [
+        "No expiration time",
+        "No attempt limiting",
+        "CAPTCHA not deleted after validation"
+      ]
+    },
+    {
+      "id": "F004",
+      "name": "User Credential Verification",
+      "category": "Authentication",
+      "status": "Active",
+      "type": "Internal Service",
+      "description": "Checks username and password against database",
+      "service": "com.example.serviceimpl.UserServiceImpl",
+      "method": "checkUser",
+      "repository": "com.example.repository.UserRepo",
+      "queryMethod": "findByUserNameAndPassword",
+      "returnType": "User object or null",
+      "errorHandling": "Exception caught and null returned",
+      "securityIssues": [
+        "Plaintext password comparison",
+        "No password hashing",
+        "Timing attack vulnerability"
+      ]
+    },
+    {
+      "id": "F005",
+      "name": "Internal CAPTCHA Validation Service",
+      "category": "Security",
+      "status": "Active",
+      "type": "Internal HTTP Service",
+      "description": "Makes HTTP call to validate CAPTCHA internally",
+      "service": "com.example.serviceimpl.UserServiceImpl",
+      "method": "validateCaptcha",
+      "protocol": "HTTP (not HTTPS)",
+      "httpClient": "Apache HttpClient 4.5.8",
+      "endpoint": "http://localhost:8080/captcha",
+      "jsonParser": "Google Gson 2.8.5",
+      "returnType": "boolean",
+      "features": [
+        "Automatic resource cleanup (try-with-resources)",
+        "Exception handling",
+        "JSON response parsing"
+      ],
+      "concerns": [
+        "HTTP instead of HTTPS",
+        "Hardcoded localhost URL",
+        "No timeout configuration"
+      ]
+    },
+    {
+      "id": "F006",
+      "name": "MongoDB User Repository",
+      "category": "Data Access",
+      "status": "Active",
+      "repository": "com.example.repository.UserRepo",
+      "extends": "MongoRepository<User, String>",
+      "collection": "users (default)",
+      "customQueries": [
+        {
+          "method": "findByUserNameAndPassword",
+          "parameters": [
+            "userName",
+            "password"
+          ],
+          "returnType": "User",
+          "description": "Finds user by exact username and password match"
+        }
+      ],
+      "inheritedOperations": [
+        "save",
+        "findById",
+        "findAll",
+        "delete",
+        "count"
+      ]
+    },
+    {
+      "id": "F007",
+      "name": "MongoDB CAPTCHA Repository",
+      "category": "Data Access",
+      "status": "Active",
+      "repository": "com.example.repository.CaptchaRepo",
+      "extends": "MongoRepository<Captcha, String>",
+      "collection": "captcha",
+      "customQueries": [
+        {
+          "method": "findByCaptchaAndIpAddress",
+          "queryAnnotation": "{ 'captcha' : ?0, 'ipAddress' : ?1 }",
+          "parameters": [
+            "captcha",
+            "ipAddress"
+          ],
+          "returnType": "List<Captcha>",
+          "description": "Finds all CAPTCHAs matching value and IP address"
+        }
+      ],
+      "features": [
+        "Custom MongoDB query annotation",
+        "Multi-result support",
+        "Composite field querying"
+      ]
+    },
+    {
+      "id": "F008",
+      "name": "CORS Support",
+      "category": "Configuration",
+      "status": "Active",
+      "scope": "Controller-level",
+      "allowedOrigin": "http://localhost:4200",
+      "appliedTo": [
+        "LoginApi.create",
+        "CaptchaApi.create",
+        "CaptchaApi.get"
+      ],
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "contentTypes": [
+        "application/json"
+      ],
+      "limitations": [
+        "Single origin only",
+        "Not configurable via properties",
+        "No credentials support specified"
+      ]
+    },
+    {
+      "id": "F009",
+      "name": "Request Validation",
+      "category": "Validation",
+      "status": "Active",
+      "type": "Manual Validation",
+      "validationChecks": [
+        {
+          "endpoint": "/login",
+          "checks": [
+            "User object not null",
+            "userName not null",
+            "password not null"
+          ]
+        },
+        {
+          "endpoint": "/captcha (POST)",
+          "checks": [
+            "Captcha object not null",
+            "ipAddress not null"
+          ]
+        },
+        {
+          "endpoint": "/captcha (GET)",
+          "checks": [
+            "ipAddress not null"
+          ]
+        }
+      ],
+      "validationFramework": "None (manual if-checks)",
+      "limitations": [
+        "No Bean Validation (JSR-303)",
+        "No format validation",
+        "No length constraints",
+        "No regex pattern matching"
+      ]
+    },
+    {
+      "id": "F010",
+      "name": "Exception Handling",
+      "category": "Error Management",
+      "status": "Active",
+      "type": "Basic try-catch",
+      "locations": [
+        "UserServiceImpl.checkUser",
+        "UserServiceImpl.validateCaptcha",
+        "CaptchaServiceImpl.createCaptcha"
+      ],
+      "errorReporting": "Console printStackTrace",
+      "errorResponses": [
+        "null return values",
+        "false boolean returns"
+      ],
+      "limitations": [
+        "No centralized exception handler",
+        "No custom exceptions",
+        "No detailed error messages to client",
+        "No logging framework"
+      ]
+    }
+  ],
+  "dataModels": [
+    {
+      "name": "User",
+      "type": "POJO",
+      "package": "com.example.data",
+      "mongoAnnotations": false,
+      "fields": [
+        {
+          "name": "userName",
+          "type": "String",
+          "description": "User's login identifier"
+        },
+        {
+          "name": "password",
+          "type": "String",
+          "description": "User's password (plaintext)",
+          "securityIssue": true
+        },
+        {
+          "name": "ipAddress",
+          "type": "String",
+          "description": "Client IP address"
+        },
+        {
+          "name": "captcha",
+          "type": "String",
+          "description": "CAPTCHA text for validation"
+        }
+      ]
+    },
+    {
+      "name": "Captcha",
+      "type": "MongoDB Document",
+      "package": "com.example.data",
+      "collection": "captcha",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "annotation": "@Id",
+          "description": "MongoDB document identifier"
+        },
+        {
+          "name": "captcha",
+          "type": "String",
+          "annotation": "@Field(\"captcha\")",
+          "description": "Generated CAPTCHA text"
+        },
+        {
+          "name": "ipAddress",
+          "type": "String",
+          "annotation": "@Field(\"ipAddress\")",
+          "description": "Client IP address"
+        }
+      ],
+      "methods": [
+        "toString() - Custom string representation"
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-mongodb",
+      "purpose": "MongoDB integration"
+    },
+    {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-web",
+      "purpose": "REST API and web support"
+    },
+    {
+      "groupId": "org.apache.commons",
+      "artifactId": "commons-lang3",
+      "version": "3.0",
+      "purpose": "Utility functions"
+    },
+    {
+      "groupId": "org.apache.httpcomponents",
+      "artifactId": "httpclient",
+      "version": "4.5.8",
+      "purpose": "HTTP client for internal service calls"
+    },
+    {
+      "groupId": "com.google.code.gson",
+      "artifactId": "gson",
+      "version": "2.8.5",
+      "purpose": "JSON parsing"
+    }
+  ],
+  "configuration": {
+    "database": {
+      "type": "MongoDB",
+      "host": "localhost",
+      "port": 27017,
+      "database": "demo",
+      "uri": "mongodb://localhost:27017/demo"
+    },
+    "server": {
+      "port": 8080,
+      "protocol": "HTTP"
+    }
+  },
+  "securityAssessment": {
+    "overallRating": "LOW",
+    "criticalIssues": [
+      "Plaintext password storage",
+      "No authentication tokens",
+      "HTTP only (no HTTPS)",
+      "No password hashing algorithm"
+    ],
+    "highIssues": [
+      "No rate limiting",
+      "CAPTCHA never expires",
+      "No session management",
+      "Hardcoded CORS origin"
+    ],
+    "mediumIssues": [
+      "No input sanitization",
+      "Basic exception handling",
+      "Console logging only",
+      "No audit trail"
+    ],
+    "recommendations": [
+      "Implement BCrypt password hashing",
+      "Add JWT token authentication",
+      "Enable HTTPS/TLS",
+      "Add CAPTCHA expiration (5-10 minutes)",
+      "Implement rate limiting",
+      "Add comprehensive logging",
+      "Use Bean Validation",
+      "Add integration tests"
+    ]
+  },
+  "metadata": {
+    "generatedDate": "2026-02-16",
+    "totalFeatures": 10,
+    "totalEndpoints": 3,
+    "totalServices": 2,
+    "totalRepositories": 2,
+    "totalDataModels": 2,
+    "linesOfCodeEstimate": 300
+  }
+}

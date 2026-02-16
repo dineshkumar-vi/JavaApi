@@ -1,0 +1,55 @@
+Feature ID,Feature Name,Category,Status,Endpoint,HTTP Method,Controller,Service,Implementation,Security Level,Has Tests,Documentation
+F001,User Authentication,Security,Active,/login,POST,LoginApi,UserService,UserServiceImpl,Low,No,Partial
+F002,CAPTCHA Generation,Security,Active,/captcha,POST,CaptchaApi,CaptchaService,CaptchaServiceImpl,Medium,No,Partial
+F003,CAPTCHA Validation,Security,Active,/captcha,GET,CaptchaApi,CaptchaService,CaptchaServiceImpl,Medium,No,Partial
+F004,User Credential Verification,Authentication,Active,Internal,N/A,N/A,UserService,UserServiceImpl,Low,No,No
+F005,Internal CAPTCHA Service Call,Security,Active,Internal,GET,N/A,UserService,UserServiceImpl,Low,No,No
+F006,MongoDB User Repository,Data Access,Active,N/A,N/A,N/A,N/A,UserRepo,Medium,No,Minimal
+F007,MongoDB CAPTCHA Repository,Data Access,Active,N/A,N/A,N/A,N/A,CaptchaRepo,Medium,No,Minimal
+F008,CORS Support,Configuration,Active,All,All,Multiple,N/A,N/A,Medium,No,No
+F009,Request Validation,Validation,Active,All,All,Multiple,N/A,N/A,Low,No,No
+F010,Exception Handling,Error Management,Active,N/A,N/A,N/A,Multiple,Multiple,Low,No,No
+
+Component,Type,Location,Lines of Code (approx),Complexity,Dependencies
+LoginApi,Controller,com.example.controllor,47,Low,UserService
+CaptchaApi,Controller,com.example.controllor,49,Low,CaptchaService
+UserService,Interface,com.example.service,~10,Low,None
+CaptchaService,Interface,com.example.service,~10,Low,None
+UserServiceImpl,Service Implementation,com.example.serviceimpl,58,Medium,"UserRepo, HttpClient, Gson"
+CaptchaServiceImpl,Service Implementation,com.example.serviceimpl,57,Medium,"CaptchaRepo, SecureRandom"
+UserRepo,Repository,com.example.repository,12,Low,MongoRepository
+CaptchaRepo,Repository,com.example.repository,20,Low,MongoRepository
+User,Data Model,com.example.data,46,Low,None
+Captcha,Data Model,com.example.data,51,Low,Spring Data MongoDB
+DemoApplication,Main Class,com.example,~15,Low,Spring Boot
+
+API Endpoint,HTTP Method,Content Type,CORS Enabled,Authentication Required,Rate Limited,Input Validation,Response Type
+/login,POST,application/json,Yes,No,No,Manual,String
+/captcha,POST,application/json,Yes,No,No,Manual,JSON Object
+/captcha,GET,application/json,Yes,No,No,Manual,JSON Object
+
+Security Issue,Severity,Location,Impact,Recommendation,Priority
+Plaintext Password Storage,Critical,User.java / UserServiceImpl,Data breach risk,Implement BCrypt hashing,P0
+No Authentication Tokens,Critical,LoginApi,Session management missing,Add JWT tokens,P0
+HTTP Only,Critical,Application-wide,Data interception,Enable HTTPS/TLS,P0
+No Rate Limiting,High,LoginApi,Brute force attacks,Implement rate limiting,P1
+CAPTCHA Never Expires,High,CaptchaServiceImpl,CAPTCHA reuse attacks,Add 5-10 min expiration,P1
+No Input Sanitization,Medium,All Controllers,Injection attacks,Add validation framework,P2
+Console Logging Only,Medium,All Services,Production debugging issues,Add proper logging framework,P2
+No Audit Trail,Medium,Application-wide,Compliance issues,Implement audit logging,P3
+
+Dependency,Group ID,Artifact ID,Version,Type,Purpose,Security Vulnerabilities
+Spring Boot Data MongoDB,org.springframework.boot,spring-boot-starter-data-mongodb,2.1.4.RELEASE,Framework,MongoDB integration,Check for updates
+Spring Boot Web,org.springframework.boot,spring-boot-starter-web,2.1.4.RELEASE,Framework,REST API support,Check for updates
+Apache Commons Lang3,org.apache.commons,commons-lang3,3.0,Utility,String utilities,Outdated version
+Apache HttpClient,org.apache.httpcomponents,httpclient,4.5.8,HTTP Client,Internal HTTP calls,Check for CVEs
+Google Gson,com.google.code.gson,gson,2.8.5,JSON Parser,JSON serialization,Check for updates
+
+Database Collection,Document Count (typical),Indexes,TTL Enabled,Queries,Access Pattern
+users,Variable,None specified,No,findByUserNameAndPassword,Read-heavy
+captcha,Variable,None specified,No,findByCaptchaAndIpAddress,Write-heavy then read
+
+Configuration Property,Value,Environment,Configurable,Security Sensitive
+spring.data.mongodb.uri,mongodb://localhost:27017/demo,Development,Yes,Yes
+server.port,8080 (default),Development,Yes,No
+cors.allowed.origin,http://localhost:4200,Development,No (hardcoded),Yes
